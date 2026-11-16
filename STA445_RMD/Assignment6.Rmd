@@ -1,0 +1,134 @@
+---
+title: "Assignment6"
+author: "Leontina Stojanovic"
+date: "2026-10-16"
+output: pdf_document
+---
+
+```{r setup}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(googlesheets4)
+library(dplyr)
+library(tidyr)
+```
+## Exercise 1
+
+A common task is to take a set of data that has multiple categorical variables and create a table of the number of cases for each combination. An introductory statistics textbook contains a data set summarizing student surveys from several sections of an intro class. The two variables of interest are `Gender` and `Year` which are the students gender and year in college. *Note: you will need to refer to Chapter 4 and Chapter 7 for some of the operations needed below - this is a great time to review chapter 4!*
+
+**a)** Download the data set using the following:
+
+```{r}
+Survey <- read.csv('https://www.lock5stat.com/datasets2e/StudentSurvey.csv', na.strings=c('',' ')) 
+```
+
+**b)** Select the specific columns of interest **Year** and **Gender**
+```{r}
+head(Survey %>% dplyr::select(Year, Gender))
+```
+From Survey I selected Year and Gender and printead the head of the Survey.
+
+**c)** Convert the **Year** column to factors and properly order the factors based on common US progression (FirstYear - Sophomore - Junior - Senior)
+```{r}
+Survey <- Survey %>%
+  mutate(Year = factor(Year)) %>%
+  mutate(Year = fct_relevel(Year, 'FirstYear', 'Sophomore', 'Junior', 'Senior'))
+head(Survey$Year)
+```
+I converted Year into factors, and I ordered them my most common US
+progression.
+
+**d)** Convert the **Gender** column to factors and rename them Male/Female.
+```{r}
+Survey <- Survey %>%
+  mutate(Gender = factor(Gender)) %>%
+  mutate(Gender = fct_recode(Gender, Male = "M")) %>%
+  mutate(Gender = fct_recode(Gender, Female = "F"))
+head(Survey)
+```
+I converted the Gender column into factors and renamed separately M and F into
+Male and Female.
+
+**e)** Produce a data set with eight rows and three columns that contains the number of responses for each gender:year combination. *You might want to look at the following functions: `dplyr::count` and `dplyr::drop_na`.*
+```{r}
+Survey_long <- Survey %>% count(Year, Gender) %>%
+  drop_na()
+Survey_long
+```
+
+I produced a data set with 8 columns by using drop_na. I used count to display
+Year and Gender. I assigned Survey to Survey_long.
+
+**f)** Pivot the table in part (e) to produce a table of the number of responses in the following form:
+        
+|   Gender    |  First Year  |  Sophomore  |  Junior   |  Senior   |
+|:-----------:|:------------:|:----------:|:---------:|:---------:|
+|  **Female** |              |            |           |           |  
+|  **Male**   |              |            |           |           | 
+    
+```{r}
+Survey_wide <- Survey_long %>% pivot_wider(names_from = Year, values_from = n)
+Survey_wide
+```
+I pivoted Survey_long and used names from Year column, and values from n column.
+I assigned Survey_long to Survey_wide.
+
+## Exercise 3
+
+For this problem we will consider two simple data sets.
+
+```{r}
+A <- tribble(
+  ~Name, ~Car,
+  'Alice', 'Ford F150',
+  'Bob',   'Tesla Model III',
+  'Charlie', 'VW Bug')
+
+B <- tribble(
+  ~First.Name, ~Pet,
+  'Bob',  'Cat',
+  'Charlie', 'Dog',
+  'Alice', 'Rabbit')
+```
+
+**a)** Combine the data frames together to generate a data set with three rows and three columns using `join` commands. 
+```{r}
+A <- A %>% rename(First.Name = Name)
+A <- A %>% rename(Pet = Car)
+FinalTable <- inner_join(A, B, by = "First.Name")
+FinalTable
+```
+I renamed tables to equal from the ones in A to the ones in B.
+Afterwards I joined them by First.Name.
+
+**b)** It turns out that Alice also has a pet guinea pig. Add another row to the `B` data set. Do this using either the base function `rbind`, or either of the `dplyr` functions `add_row` or `bind_rows`.
+```{r}
+df<- tibble(First.Name = 'Alice', Pet = 'Guinea pig')
+B <- rbind(B, df)
+B
+```
+I added another row to B, and rbind it.
+
+**c)** Combine again the `A` and `B` data sets together to generate a data set with four rows and three columns using `join` commands.
+```{r}
+FinalTable <- inner_join(A, B, by = "First.Name")
+FinalTable
+```
+I joined the data sets again, and this time another pet for Alice
+was added.
+
+*Note: You may want to also try using `cbind` to address questions (a) and (c). Leave this as a challenge question and focus on the easier to use `join` functions introduced in this chapter.*
+
+## Exercise 4
+
+The package `nycflights13` contains information about all the flights that arrived in or left from New York City in 2013. This package contains five data tables, but there are three data tables we will work with. The data table `flights` gives information about a particular flight, `airports` gives information about a particular airport, and `airlines` gives information about each airline. Create a table of all the flights on February 14th by Virgin America that has columns for the carrier, destination, departure time, and flight duration. Join this table with the airports information for the destination. Notice that because the column for the destination airport code doesn't match up between `flights` and `airports`, you'll have to use the `by=c("TableA.Col"="TableB.Col")` argument where you insert the correct names for `TableA.Col` and `TableB.Col`.
+```{r}
+library(nycflights13)
+nyc_data <- inner_join(flights, airports, by = c("dest" = "faa"))
+virgin_flights <- nyc_data %>%
+  filter(month==2, day==14, carrier =="VX")
+virgin_flights <- virgin_flights %>%
+  select(carrier, dest, dep_time, air_time)
+virgin_flights
+```
+I loaded the library, joined flights by destination. Filtered it for specific month and day. Selected for specific carrier,  dest, dep_time, air_time. And joined again.

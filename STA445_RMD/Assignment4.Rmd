@@ -1,0 +1,222 @@
+---
+title: "Assignment4"
+author: "Leontina Stojanovic"
+date: "2026-10-16"
+output: pdf_document
+---
+
+```{r setup}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(googlesheets4)
+library(readxl)
+library(dplyr)
+```
+
+## Exercise 1
+
+For the following regular expression, explain in words what it matches on. Then add test strings to demonstrate that it in fact does match on the pattern you claim it does. Make sure that your test set of strings has several examples that match as well as several that do not. Show at least two examples that return TRUE and two examples that return FALSE. *If you copy the Rmarkdown code for these exercises directly from my source pages, make sure to remove the `eval=FALSE` from the R-chunk headers.*
+
+Here is an example of what a solution might look like.
+
+**q)** This regular expression matches: 
+
+Any string that contains the lower-case letter "a".
+
+```{r}
+strings <- c('Adel', 'Mathematics', 'able', 'cheese')
+data.frame( string = strings ) %>%
+  mutate( result = str_detect(string, 'a') )
+```
+
+Please complete the questions below.
+
+**a)** This regular expression matches:  
+
+*Insert your answer here...*
+
+```{r}
+strings <- c('Airplane', 'Bird', 'able', 'abandon')
+data.frame( string = strings ) %>%
+  mutate( result = str_detect(string, 'ab') )
+```
+I added words that had ab together in the word.
+**b)** This regular expression matches:  
+
+*Insert your answer here...*
+
+```{r}
+strings <- c('sequence', 'airplane', 'custom', 'banana')
+data.frame( string = strings ) %>%
+  mutate( result = str_detect(string, '[ab]') )
+```
+I added words that had a or b in the word.
+
+**c)** This regular expression matches:  
+
+*Insert your answer here...*
+```{r}
+strings <- c('sequence', 'airplane', 'custom', 'able')
+data.frame( string = strings ) %>%
+  mutate( result = str_detect(string, '^[ab]') )
+```
+I added words that began with a or b.
+
+**d)** This regular expression matches:  
+
+*Insert your answer here...*
+
+```{r}
+strings <- c('1 a', '26
+A', 'cutom', 'water')
+data.frame( string = strings ) %>%
+  mutate( result = str_detect(string, '\\d+\\s[aA]') )
+```
+One or more multiple digits and one of any white space containing lower case a
+or upper case A.
+
+**e)** This regular expression matches:  
+
+*Insert your answer here...*
+
+```{r}
+strings <- c('33A', '78
+   a', 'alpha', 'a33')
+data.frame( string = strings ) %>%
+  mutate( result = str_detect(string, '\\d+\\s*[aA]') )
+```
+One or more multiple digits and zero or more repetitions of any white spaces
+containing lower case a or upper case A.
+
+**f)** This regular expression matches:  
+
+*Insert your answer here...*
+
+```{r}
+strings <- c('4', '', '//', 'NULL', 'NA')
+data.frame( string = strings ) %>%
+  mutate( result = str_detect(string, '.*') )
+```
+Zero or more repetitions for any character.
+
+**g)** This regular expression matches:  
+
+*Insert your answer here...*
+
+```{r}
+strings <- c('bbbar', 'bar', 'zbbar', 'grbr')
+data.frame( string = strings ) %>%
+  mutate( result = str_detect(string, '^\\w{2}bar') )
+```
+Any alphanumeric character repeated twice and contains bar. 
+
+**h)** This regular expression matches:  
+
+*Insert your answer here...*
+
+```{r}
+strings <- c('foo.bar', '2zbar', '2foo', '22')
+data.frame( string = strings ) %>%
+  mutate( result = str_detect(string, '(foo\\.bar)|(^\\w{2}bar)') )
+```
+Contains foo.bar or begins with any alphanumeric character repeated twice and
+contains bar.
+
+## Exercise 2
+
+The following file names were used in a camera trap study. The S number represents the site, P is the plot within a site, C is the camera number within the plot, the first string of numbers is the YearMonthDay and the second string of numbers is the HourMinuteSecond.
+
+```{r}
+file.names <- c( 'S123.P2.C10_20120621_213422.jpg',
+                 'S10.P1.C1_20120622_050148.jpg',
+                 'S187.P2.C2_20120702_023501.jpg')
+```
+
+Produce a data frame with columns corresponding to the `site`, `plot`, `camera`, `year`, `month`, `day`, `hour`, `minute`, and `second` for these three file names. So we want to produce code that will create the data frame:
+
+```{r}
+file.names <- str_replace_all(file.names, pattern = '\\_', replacement = '\\.')
+file.names
+```
+I replaced every _ character with a . character.
+```{r}
+file.names <- str_split_fixed(file.names, pattern = '\\.', n = 6)
+file.names
+```
+Any time there was a . character I splitted it. 
+
+```{r}
+Site <- str_sub(file.names[,1], start = 1, end = 4)
+Plot <- str_sub(file.names[,2], start = 1, end = 2)
+Camera <- str_sub(file.names[,3], start = 1, end = 3)
+Years <- str_sub(file.names[,4], start = 1, end = 4)
+Month <- str_sub(file.names[,4], start = 5, end = 6)
+Day <- str_sub(file.names[,4], start = 7, end = 8)
+Hour <- str_sub(file.names[,5], start = 1, end = 2)
+Minute <- str_sub(file.names[,5], start = 3, end = 4)
+Second <- str_sub(file.names[,5], start = 5, end = 6)
+file.names <- file.names[,-6]
+file.names
+file.names <- data.frame(
+  Site = file.names[,1],
+  Plot = file.names[,2],
+  Camera = file.names[,3],
+  Years = Years,
+  Month = Month,
+  Day = Day,
+  Hour = Hour,
+  Minute = Minute,
+  Second = Second
+)
+file.names
+```
+I splitted column 4 into Year, Month, and Day. I splitted column 5 into Hour,
+Minute, and Second.I deleted column 6. I made data.frame and asigned each number
+to its column. 
+
+```{r, eval=FALSE}
+ Site Plot Camera Year Month Day Hour Minute Second
+ S123   P2    C10 2012    06  21   21     34     22
+  S10   P1     C1 2012    06  22   05     01     48
+ S187   P2     C2 2012    07  02   02     35     01
+```
+
+## Exercise 3
+
+The full text from Lincoln's Gettysburg Address is given below. It has been provided in a form that includes lots of different types of white space. Your goal is to calculate the mean word length of Lincoln's Gettysburg Address! *Note: you may consider 'battle-field' as one word with 11 letters or as two words 'battle' and 'field'. The first option a bit more difficult and technical!*.
+
+```{r}
+Gettysburg <- 'Four score and seven years ago our fathers brought forth on this 
+continent, a new nation, conceived in Liberty, and dedicated to the proposition 
+that all men are created equal.
+
+Now we are engaged in a great civil war, testing whether that nation, or any 
+nation so conceived and so dedicated, can long endure. We are met on a great 
+battle-field of that war. We have come to dedicate a portion of that field, as 
+a final resting place for those who here gave their lives that that nation might 
+live. It is altogether fitting and proper that we should do this.
+
+But, in a larger sense, we can not dedicate -- we can not consecrate -- we can 
+not hallow -- this ground. The brave men, living and dead, who struggled here, 
+have consecrated it, far above our poor power to add or detract. The world will 
+little note, nor long remember what we say here, but it can never forget what 
+they did here. It is for us the living, rather, to be dedicated here to the 
+unfinished work which they who fought here have thus far so nobly advanced. It 
+is rather for us to be here dedicated to the great task remaining before us -- 
+that from these honored dead we take increased devotion to that cause for which 
+they gave the last full measure of devotion -- that we here highly resolve that 
+these dead shall not have died in vain -- that this nation, under God, shall 
+have a new birth of freedom -- and that government of the people, by the people, 
+for the people, shall not perish from the earth.'
+
+Gettysburg2 <- str_replace_all(Gettysburg, pattern = '\\W', replacement = ' ')
+Gettysburg2 <- str_split(Gettysburg2, pattern = '\\s+')[[1]]
+words <- read_file(Gettysburg)
+words <- Gettysburg2
+mean(nchar(words))
+```
+I replaced every no alphanumeric character with the space. I splitted words any
+time there was one or more spaces, and it always started from the first
+character. I read the words in Gettysburg, and save replaced and splitted
+pattern that I created into words. I calculated mean length of each word of the
+Gettysburg
