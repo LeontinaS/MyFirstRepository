@@ -1,6 +1,6 @@
 # MyFirstRepository
 This is my first repository
 
-##Leontina Stojanovic
+## Leontina Stojanovic
 
-###STA445
+### STA445
